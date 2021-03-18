@@ -1,7 +1,7 @@
 # trinket-life
 Arduino (trinket m0) implementation of conway's game of life
 
-writeup: https://elimbam.com/2021/02/28/pandemic-projects-tiny-life.html
+writeup: https://elibaum.com/2021/02/28/pandemic-projects-tiny-life.html
 
 These files were originally not all in the same place, so I combined into a single git repo. Sorry it's not that well organized. :)
 
