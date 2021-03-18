@@ -1,0 +1,162 @@
+OLED LIFE
+=========
+
+
+contrary to popular belief (i.e. back of board, and adafruit library???)
+OLED is at I2C address 0x3C. Also, 3-5V compatible.
+
+And for whatever reason, only SWITCHCAPVCC option works.
+
+end state detection: count works pretty well. might not see a lone glider
+moving through empty space, however. possibly count diagonals? this will
+ignore plus-forms but not necessarily other stable configurations.
+
+most oscillators are period 2, except for pulsar (which I have seen) period 
+3. pentadecathlon is period 15 incredibly unlikely. so maybe can simplify
+this to just check the last 6 (i.e. 3x2).
+
+current speed @ scale 2: 20 generations in 14 seconds. 0.7 sec/gen
+
+i think i can speed this up by not using as many adafruit functions.
+
+removing calls to check() where it isn’t necessary brings it down to 7
+seconds, 0.35 sec/gen
+
+getting about 250-260 loop times
+
+on scale 1, loop time ~ 910.
+
+turning function calls to getPixel into a macro with direct buffer access
+(i don’t need rotation or bounds checking…) brings the 2x timing down to
+200! 20 gen in 5 sec, 0.25 per.
+
+using bytes everywhere might speed up. everything fits and there aren’t
+any sign issues. adding int8 to int16 might be slower than adding like
+types.
+
+hmm, no breaks wraparound. think this is probably a <= issue. for some
+reason, != very slow. should be in the instruction set, but might not be
+getting compiled down to it correctly. possibly a signed/unsigned issue.
+
+using byte: 225 ms/gen [broke wraparound, now can’t reproduce?]
+bitmath tricks: 
+using int: 237. not much of a speedup.
+
+sticking with int.
+
+assembly: no need for PCB. Display + trinket M0 + maybe battery? could be
+a good opportunity to get experience with that. li-ion battery + charger.
+ideally feed charger into trinket for on-display updates.
+also need a button.
+
+more randomness? sample lower bits into buffer
+
+I think I could probably do this on trinket. only have 100 bytes to kill.
+But might have to manually implement display library...!
+
+Yeah, looks like the adafruit OLED library will need to be reworked. but
+that will be an opportunity to kill space, too!
+
+just to write it down... OLED is 5V compatible. (3-5V)
+https://www.amazon.com/gp/product/B06XRBTBTB
+
+Oh! but my trinket is 3V.
+
+works without modification on trinket m0. old trinket is bunked, need to
+reflash
+
+How to do bitspreading?
+Convert b1010 to b11001100
+math: (shift each bit, select with and, then or with itself shifted right)
+lut: 16 values. that's not bad actually.
+
+now need to send the high/low bytes, and have some way to re-send the same
+line again
+
+just realized, the address on the back is wrong because they gave the 8bit
+value (0x78) rather than the proper 7bit value (0x3c). i think that extra
+bit is used for requesting data rather than pushing data, but it's usually
+not part of the address.
+
+
+
+===
+back at it.
+
+Moving to M0. Not sure why I didn't want to do this before. I don't think
+it's worth the extra effort of optimizing for ATtiny. Trinket runs @ 15fps,
+and could probably do better if I used bit patterns and lookup tables. But
+15 fps is even too fast for what I want the final to look like, so I'll
+leave it. Satisfy, don't optimize!
+
+Added another hash check that updates on prime-numbered intervals (currently
+263). This should catch runaway gliders, or other long-looping structures,
+though I doubt I'll see anything too interesting generate naturally.
+
+I'm using 263 as the prime, because glider takes 256 ticks to return to its
+original location on my current setup.
+
+Trinket M0 has a CRC32 generator in hardware. No idea what the interface looks
+like but that might be an interesting thing to explore.
+
+Display test: just toggling the screen is 28 ms. so I'm using 38 ms on computation.
+
+I should do a write up of this! pretty interesting stuff.
+
+
+===
+32 bit time!
+I'm on a 32 bit machine. I should take advantage! Notably, store rows as
+uint32_t.
+
+How to handle wrapping? Easy, rotate! Checking to make sure gcc knows about
+the idiom. Looks like it does! `ror` instruction.
+
+Checking rand(): Looks like returns on range [0, 0x7FFFFFFF], so missing a bit.
+even/odd bias ok.
+
+Get desired density: just a rand() will be 50%. rand() & rand() [bitwise] should
+give us 25% density! good enough to the 20 I have been using.
+
+That seems to be working!
+
+significant speedup by clearing screen and then only drawing live.
+
+top/bottom edge condition not working. left/right okay, tho.
+
+37 ms gen time!
+also did away with hash list, for now, and just checking every 6. Fewer things
+to check, but pretty much the same result!
+
+Trinket crashing? While trying to fix rotate code, took out bit mask with 0x7,
+so was accessing way-out-of-bounds on the bit_counts array!
+
+...and now the rotate is working (therefore top/bottom wrap is). problem was
+that I should have been subtracting (n - 1) before applying the mask, NOT
+after. mask is necssary for the rotate code.
+
+Now down to 36 ms. Dispaly is not really the issue - changing rect to single
+pixel draw only brings it down to 35. though come to think of it it looks
+pretty cool...
+
+Trying to add some known delay into drawCell so I can estimate how much time
+is spent in there. 100us delay makes it 1.5x slower, so that tells me that
+the program is spending between 12% and 25% of its time in drawCell().
+significant! but unfortunately drawpixel doesn't even speed it up that much,
+and draw pixel is doing direct buffer manipulations.
+
+ok. i think my rules are a bit off. things are a bit funky. eh, ok guess its
+fine. pentomino running for 1200 horizontal, 780 vertical (as expected). maybe
+the display isn't updaating fully, so I'm seeing weird artifacts?
+
+inline rotate_shift_three -> 33 ms! I should probably stop by now but it's too
+fun.
+
+so that's about 16 microseconds per cell (2048 of them). @ clock speed 48MHz,
+20 ns per cycle. 800 instructions, ish per cell. That still seems like a lot!
+But I am dealing with C++ here. And that's not fully amortized because there are
+non-cell portions (display, hashing) that take some time.
+
+todo at this point
+- make wiring nice on breadboard
+- button to reset/turn off/on, and go to sleep! maybe hold is off.
