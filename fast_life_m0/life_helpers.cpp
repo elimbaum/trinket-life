@@ -25,7 +25,7 @@ void collectRandomness(int t) {
     uint32_t r = 0;
 
     while (wait_t + t > millis()) {
-        r += analogRead(A3);
+        r += analogRead(A4);
         delay(1);
     }
 

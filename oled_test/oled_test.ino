@@ -39,11 +39,13 @@ void loop() {
   display.display();
   */
 //  display.fillScreen(1);
-  display.fillRect(0, 0, 4, 4, 1);
+  display.fillRect(0, 0, 128, 64, 1);
   display.display();
   frame++;
+
+  delay(1000);
   
-  display.fillRect(0, 0, 4, 4, 0);
+  display.fillRect(0, 0, 128, 64, 0);
   display.display();
   frame++;
 
@@ -54,5 +56,5 @@ void loop() {
     start_t = millis();
   }
   
-  //delay(100);
+  delay(1000);
 }
