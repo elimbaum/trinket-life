@@ -15,7 +15,8 @@ uint32_t first_col;
 uint32_t this_col;
 uint32_t last_col;
 
-uint32_t check_hash = 0;
+uint32_t short_check_hash = 0;
+uint32_t long_check_hash = 0;
 uint32_t generation = 0;
 uint32_t start_t = 0;
 
@@ -97,7 +98,7 @@ void setup() {
     
     Serial.println("Start!");
 
-    check_hash = 0;
+    short_check_hash = 0;
     generation = 0;
 
     start_t = micros();
@@ -231,13 +232,30 @@ void loop() {
     }
 
     // check hash
-    if (check_hash == hash) {
+    if (short_check_hash == hash) {
+        // short hash matches - we're in a 6 loop. reset
         resetGame(hash, micros() - start_t);
         generation = 0;
         start_t = micros();
+    } else if (long_check_hash == hash) {
+        // long hash matches - we probably have a glider
+        // randomly reset - about 1% of the time?
+        Serial.println("long hash match!")
+
+        // rand returns [0 32767]
+        if (rand() < LONG_HASH_THRESHOLD) {
+            resetGame(hash, micros() - start_t);
+            generation = 0;
+            start_t = micros();
+        }
+
     } else {
-        if (generation % HASH_INTERVAL == 0) {
-            check_hash = hash;
+        if (generation % SHORT_HASH_INTERVAL == 0) {
+            short_check_hash = hash;
+        }
+
+        if (generation % LONG_HASH_INTERVAL == 0) {
+            long_check_hash = hash;
         }
 
         // Serial.print(generation);

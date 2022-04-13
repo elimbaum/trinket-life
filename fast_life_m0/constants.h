@@ -12,7 +12,11 @@
 #define I2C_ADDR 0x3C
 
 // how often to take a hash
-#define HASH_INTERVAL 6
+#define SHORT_HASH_INTERVAL 6
+#define LONG_HASH_INTERVAL 256
+
+// fraction of 32767 to randomly reset if long hash matches
+#define LONG_HASH_THRESHOLD 328
 
 #define FRAME_DELAY 64
 #define FRAME_TIME 100
