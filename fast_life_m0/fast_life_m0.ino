@@ -240,7 +240,7 @@ void loop() {
     } else if (long_check_hash == hash) {
         // long hash matches - we probably have a glider
         // randomly reset - about 1% of the time?
-        Serial.println("long hash match!")
+        Serial.println("long hash match!");
 
         // rand returns [0 32767]
         if (rand() < LONG_HASH_THRESHOLD) {

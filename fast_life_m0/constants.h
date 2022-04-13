@@ -19,7 +19,7 @@
 #define LONG_HASH_THRESHOLD 328
 
 #define FRAME_DELAY 64
-#define FRAME_TIME 100
+#define FRAME_TIME 10
 
 #define BUTTON_PIN 3
 #define DEBOUNCE_MS 100
