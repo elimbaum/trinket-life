@@ -19,9 +19,12 @@
 #define LONG_HASH_THRESHOLD 328
 
 #define FRAME_DELAY 64
-#define FRAME_TIME 10
+#define FRAME_TIME 20
 
 #define BUTTON_PIN 3
 #define DEBOUNCE_MS 100
+
+#define SDA_PIN 0
+#define SCK_PIN 2
 
 #define SERIAL_TIMEOUT 5000

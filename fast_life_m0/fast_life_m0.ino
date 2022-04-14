@@ -55,6 +55,11 @@ void setup() {
     pinMode(BUTTON_PIN, INPUT_PULLUP);
     pinMode(LED_BUILTIN, OUTPUT);
 
+    pinMode(SDA_PIN, OUTPUT);
+    pinMode(SCK_PIN, OUTPUT);
+    digitalWrite(SDA_PIN, LOW);
+    digitalWrite(SCK_PIN, LOW);
+
     Serial.begin(9600);
 
     // turn off LED
