@@ -14,7 +14,7 @@ int frame = 0;
 long start_t = 0;
 
 void setup() {
-  Serial.begin(9600);
+  // Serial.begin(9600);
   randomSeed(analogRead(A0));
   
   if(!display.begin(SSD1306_SWITCHCAPVCC, I2C_ADDR)) {
@@ -49,7 +49,7 @@ void loop() {
   display.display();
   frame++;
 
-  if (frame % 100 == 0) {
+  if (frame % 10 == 0) {
     long elapsed = millis() - start_t;
     Serial.println(elapsed / 100);
     frame = 0;

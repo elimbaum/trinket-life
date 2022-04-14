@@ -15,3 +15,7 @@ The main and final code is in `fast_life_m0`, if you want to try it out.
 - `oled_test`, `rand_test`, `toggle`: testing out various parts of the system individually.
 - `notes.txt` notes from working on this project
 - `scanned notes.pdf` some hand-written notes from when I was trying to work out state machines and various other optimizations.
+
+*I didn't have the most up-to-date display library installed!* Hence the weird half-screen thing. My OLED test program was working, because I was basing that off of the new version. Super fkin annoying!
+
+Culprit appears to be that the I2C bus wasn't being allowed to send enough data. Fixed [here](https://github.com/adafruit/Adafruit_SSD1306/compare/2.4.0...2.4.1).
